@@ -1,0 +1,119 @@
+﻿@model DigitalTurbine.Models.PeopleViewModel
+@using PagedList.Mvc;
+@{
+    Layout = null;
+    ViewBag.Title = "Digital Turbine - Developer Test";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    <link rel="shortcut icon" href="https://3vcopt230tew1kypgbhsm0u1-wpengine.netdna-ssl.com/wp-content/themes/nmc_digitalturbine/favicon.ico" />
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body class="no-navbar">
+    <h2>@ViewBag.Title</h2>
+    <div>
+    @using (Html.BeginForm())
+    {
+        <fieldset class="form-group">
+            <div class="col-md-2">
+                @Html.EnumDropDownListFor(model => model.RaceList, "Select a Race", new { @class = "form-control", @onchange = "this.form.submit();" })
+            </div>
+            <div class="col-md-6">
+                <table class="table">
+                    <tr>
+                        <th>No. of People</th>
+                        <th>Ave. Age</th>
+                        <th>Min. Age</th>
+                        <th>Max. Age</th>
+                    </tr>
+                    <tr>
+                        <td class="NumOfPeople"></td>
+                        <td class="AveAge"></td>
+                        <td class="MinAge"></td>
+                        <td class="MaxAge"></td>
+                    </tr>
+                </table>            </div>
+            <div class="col-md-2">
+                @Html.ActionLink("Increase People Age", "IncreasePeopleAge", null, new { @class = "btn btn-primary", @title="Increase all people age +1 year" })
+            </div>
+            <div class="col-md-2 text-right">
+                <br /><br />
+                <br /><br />
+                Page @(Model.People.PageCount < Model.People.PageNumber ? 0 : Model.People.PageNumber) of @Model.People.PageCount
+            </div>
+        </fieldset>
+    }
+    </div>
+    <div>
+        <table class="table table-striped">
+            <tr class="">
+                <th class="col-md-4">
+                    @Html.DisplayNameFor(model => model.People.First().Name)
+                </th>
+                <th class="col-md-2">
+                    @Html.DisplayNameFor(model => model.People.First().Age)
+                </th>
+                <th class="col-md-2">
+                    @Html.DisplayNameFor(model => model.People.First().Height)
+                </th>
+                <th></th>
+            </tr>
+
+            @foreach (var item in Model.People)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Age)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Height)
+                    </td>
+                    <td></td>
+                </tr>
+            }
+        </table>
+        <div class="text-center">
+@Html.PagedListPager(Model.People, pageNo => Url.Action("Index", new { ViewBag.raceList, pageNo }), PagedListRenderOptions.OnlyShowFivePagesAtATime)
+        </div>
+    </div>
+
+@Scripts.Render("~/bundles/jquery")
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var selectedRace = $("#RaceList").val();
+            if (selectedRace > 0)
+                $(".btn-primary").hide();
+            else
+                $(".btn-primary").show();
+
+            GetPeopleSummary();
+        });
+
+        var GetPeopleSummary = function () {
+
+            var selectedRace = $("#RaceList").val();
+            if (selectedRace == "")
+                selectedRace = "0";
+
+            var url = "/api/PeopleSummary/" + selectedRace;
+            $.getJSON(url,
+                function (data, status) {
+                    if (status == "success") {
+                        $(".NumOfPeople").text(data.NumOfPeople);
+                        $(".AveAge").text(data.AverageAge);
+                        $(".MinAge").text(data.MinAge);
+                        $(".MaxAge").text(data.MaxAge);
+                    }
+                })
+        }
+    </script>
+</body>
+</html>
